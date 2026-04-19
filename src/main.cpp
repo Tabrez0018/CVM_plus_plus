@@ -7,8 +7,8 @@
 
 // These headers don't exist yet, but we need them for the compiler to know 
 // what Token and Scanner are. We will build them next!
-#include "Token.h"
-#include "Scanner.h"
+#include "Token.hpp"
+#include "Scanner.hpp"
 
 // 1. Global State
 inline bool hadError = false;
