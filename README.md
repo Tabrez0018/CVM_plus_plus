@@ -1,1 +1,1 @@
-# cvm-plus-plus
+# CVM++
