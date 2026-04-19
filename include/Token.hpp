@@ -6,7 +6,7 @@ enum class TokenType {
     // Single-character tokens.
     LEFT_PAREN, RIGHT_PAREN, 
     LEFT_BRACE, RIGHT_BRACE,
-    MINUS, PLUS, SEMICOLON, SLASH, STAR,
+    MINUS, PLUS, SEMICOLON, SLASH, STAR, DOT, COMMA,
 
     // One or two character tokens.
     BANG, BANG_EQUAL,
@@ -15,7 +15,7 @@ enum class TokenType {
     LESS, LESS_EQUAL,
 
     // Literals.
-    IDENTIFIER, NUMBER,
+    IDENTIFIER, NUMBER, STRING,
 
     // Keywords.
     ELSE, FALSE, IF, PRINT, TRUE, WHILE, LET, INPUT, FOR, AND, OR, RETURN, 
@@ -36,3 +36,4 @@ public:
     // Replaces Java's toString()
     std::string toString() const;
 };
+
