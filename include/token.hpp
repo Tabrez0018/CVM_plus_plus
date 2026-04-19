@@ -18,7 +18,7 @@ enum class TokenType {
     IDENTIFIER, NUMBER,
 
     // Keywords.
-    ELSE, FALSE, IF, PRINT, TRUE, WHILE, LET, INPUT,
+    ELSE, FALSE, IF, PRINT, TRUE, WHILE, LET, INPUT, FOR, AND, OR, RETURN, 
 
     EOF_TOKEN
 };
