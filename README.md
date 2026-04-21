@@ -1,19 +1,20 @@
-# CVM++
-
 cvm-plus-plus/
 ├── src/
-│   ├── main.cpp        # The entry point, argument parsing, and REPL loop
-│   ├── token.cpp       # Implementation of Token constructor and toString()
-│   ├── scanner.cpp     # The state machine that reads text (up next!)
-│   ├── parser.cpp      # (Future) Will build the Abstract Syntax Tree (AST)
-│   └── vm.cpp          # (Future) The Stack-based Virtual Machine
+│   ├── main.cpp        # Deliverable: CLI-based REPL / File Runner demo
+│   ├── token.cpp       # Part of Lexer module
+│   ├── scanner.cpp     # Deliverable: Lexer module (Completed!)
+│   ├── parser.cpp      # Deliverable: Parser module (Arranges Tokens into AST)
+│   ├── compiler.cpp    # Deliverable: Bytecode Compiler module (Flattens AST)
+│   └── vm.cpp          # Deliverable: Virtual Machine execution engine
 ├── include/
-│   ├── Token.h         # TokenType enum and Token class blueprint
-│   ├── Scanner.h       # Scanner class blueprint
-│   ├── common.h        # (Future) Standard includes and types (like uint8_t)
-│   └── chunk.h         # (Future) The dynamic array for our Bytecode
+│   ├── Token.h         
+│   ├── Scanner.h       
+│   ├── Expr.h          # NEW: The AST node definitions for the Parser
+│   ├── Parser.h        # NEW: Blueprint for parser.cpp
+│   ├── Compiler.h      # NEW: Blueprint for compiler.cpp
+│   ├── common.h        
+│   └── chunk.h         
 ├── tests/
-│   ├── simple_math.cvm # Basic arithmetic tests
-│   └── loops.cvm       # Testing while/for loops
-├── CMakeLists.txt      # (Or Makefile) Build instructions for C++
-└── README.md           # Project documentation
+│   ├── simple_math.cvm 
+│   └── loops.cvm       
+└── CMakeLists.txt
