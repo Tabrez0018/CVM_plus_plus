@@ -9,6 +9,8 @@
 // what Token and Scanner are. We will build them next!
 #include "Token.hpp"
 #include "Scanner.hpp"
+#include "Parser.hpp"
+#include "AstPrinter.hpp"
 
 // 1. Global State
 inline bool hadError = false;
@@ -63,13 +65,20 @@ void runPrompt() {
 }
 
 void run(const std::string& source) {
+    // 1. Lexical Analysis (Scanner)
     Scanner scanner(source);
     std::vector<Token> tokens = scanner.scanTokens();
 
-    // For now, just print the tokens.
-    for (const Token& token : tokens) {
-        std::cout << token.toString() << "\n";
-    }
+    // 2. Syntactic Analysis (Parser)
+    Parser parser(tokens);
+    std::unique_ptr<Expr> expression = parser.parse();
+
+    // Stop if there was a syntax error
+    if (hadError || expression == nullptr) return;
+
+    // 3. Output the AST (Temporary, just to prove it works!)
+    AstPrinter printer;
+    std::cout << printer.print(*expression) << "\n";
 }
 
 void report(int line, const std::string& where, const std::string& message) {
