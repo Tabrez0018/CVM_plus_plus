@@ -4,15 +4,78 @@
 // External function from main.cpp to report errors
 extern void error(int line, const std::string& message);
 
+// Constructor
 Parser::Parser(const std::vector<Token>& tokens) : tokens(tokens) {}
 
-std::unique_ptr<Expr> Parser::parse() {
+// --- UPDATED ENTRY POINT ---
+std::vector<std::unique_ptr<Stmt>> Parser::parse() {
+    std::vector<std::unique_ptr<Stmt>> statements;
+    while (!isAtEnd()) {
+        statements.push_back(declaration());
+    }
+    return statements;
+}
+
+// --- NEW STATEMENT PARSING LOGIC ---
+std::unique_ptr<Stmt> Parser::declaration() {
     try {
-        return expression();
+        if (match({TokenType::LET})) return varDeclaration();
+        return statement();
     } catch (const ParseError& error) {
-        return nullptr; // If we hit an error, return a null tree
+        synchronize(); // If a line is bad, skip to the next line and keep parsing!
+        return nullptr;
     }
 }
+
+std::unique_ptr<Stmt> Parser::varDeclaration() {
+    Token name = consume(TokenType::IDENTIFIER, "Expect variable name.");
+
+    std::unique_ptr<Expr> initializer = nullptr;
+    if (match({TokenType::EQUAL})) {
+        initializer = expression();
+    }
+
+    consume(TokenType::SEMICOLON, "Expect ';' after variable declaration.");
+    return std::make_unique<VarStmt>(name, std::move(initializer));
+}
+
+std::unique_ptr<Stmt> Parser::statement() {
+    if (match({TokenType::PRINT})) return printStatement();
+    return expressionStatement();
+}
+
+std::unique_ptr<Stmt> Parser::printStatement() {
+    std::unique_ptr<Expr> value = expression();
+    consume(TokenType::SEMICOLON, "Expect ';' after value.");
+    return std::make_unique<PrintStmt>(std::move(value));
+}
+
+std::unique_ptr<Stmt> Parser::expressionStatement() {
+    std::unique_ptr<Expr> expr = expression();
+    consume(TokenType::SEMICOLON, "Expect ';' after expression.");
+    return std::make_unique<ExpressionStmt>(std::move(expr));
+}
+
+// --- ERROR RECOVERY ---
+void Parser::synchronize() {
+    advance();
+    while (!isAtEnd()) {
+        if (previous().type == TokenType::SEMICOLON) return;
+        switch (peek().type) {
+            case TokenType::LET:
+            case TokenType::FOR:
+            case TokenType::IF:
+            case TokenType::WHILE:
+            case TokenType::PRINT:
+            case TokenType::RETURN:
+                return;
+            default: break;
+        }
+        advance();
+    }
+}
+
+// --- EXPRESSION RULES ---
 
 // expression -> equality
 std::unique_ptr<Expr> Parser::expression() {
@@ -88,12 +151,16 @@ std::unique_ptr<Expr> Parser::primary() {
     if (match({TokenType::TRUE})) return std::make_unique<Literal>(true);
     
     if (match({TokenType::NUMBER})) {
-        // Convert the string lexeme into a C++ double
         return std::make_unique<Literal>(std::stod(previous().lexeme));
     }
 
     if (match({TokenType::STRING})) {
         return std::make_unique<Literal>(previous().lexeme);
+    }
+
+    // NEW: Variable lookup ("x")
+    if (match({TokenType::IDENTIFIER})) {
+        return std::make_unique<Variable>(previous());
     }
 
     if (match({TokenType::LEFT_PAREN})) {
@@ -145,6 +212,6 @@ Token Parser::consume(TokenType type, const std::string& message) {
 }
 
 Parser::ParseError Parser::error(const Token& token, const std::string& message) {
-    ::error(token.line, message); // Call the global error function in main.cpp
+    ::error(token.line, message); 
     return ParseError(message);
 }
