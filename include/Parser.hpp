@@ -5,14 +5,26 @@
 #include <stdexcept>
 #include "Token.hpp"
 #include "Expr.hpp"
+#include "Stmt.hpp" // <-- NEW
 
 class Parser {
 private:
     std::vector<Token> tokens;
     int current = 0;
 
-    // --- GRAMMAR RULES ---
+    // --- NEW STATEMENT RULES ---
+    std::unique_ptr<Stmt> declaration();
+    std::unique_ptr<Stmt> varDeclaration();
+    std::unique_ptr<Stmt> statement();
+    std::unique_ptr<Stmt> printStatement();
+    std::unique_ptr<Stmt> expressionStatement();
+    
+    // --- ERROR RECOVERY ---
+    void synchronize(); // Helps the parser recover if it hits a bad line
+
+    // --- EXISTING EXPRESSION RULES ---
     std::unique_ptr<Expr> expression();
+    // ... (Keep equality, comparison, term, factor, unary, primary exactly the same)
     std::unique_ptr<Expr> equality();
     std::unique_ptr<Expr> comparison();
     std::unique_ptr<Expr> term();
@@ -29,7 +41,6 @@ private:
     Token previous() const;
     Token consume(TokenType type, const std::string& message);
 
-    // Error handling
     class ParseError : public std::runtime_error {
     public:
         ParseError(const std::string& message) : std::runtime_error(message) {}
@@ -39,6 +50,6 @@ private:
 public:
     Parser(const std::vector<Token>& tokens);
     
-    // The main entry point
-    std::unique_ptr<Expr> parse();
+    // CHANGED: Now returns a list of statements instead of one expression!
+    std::vector<std::unique_ptr<Stmt>> parse(); 
 };

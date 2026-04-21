@@ -1,17 +1,27 @@
 #pragma once
 #include "Expr.hpp"
+#include "Stmt.hpp"
 #include <string>
 #include <sstream>
 
-class AstPrinter : public ExprVisitor {
+class AstPrinter : public ExprVisitor, public StmtVisitor {
+private:
+    std::string currentStmtString;
+
 public:
-    // This is the public API we call to kick off the printing process
+    // Prints an Expression
     std::string print(const Expr& expr) {
-        // expr.accept returns std::any, so we cast it back to a string
         return std::any_cast<std::string>(expr.accept(*this));
     }
 
-    // --- VISITOR OVERRIDES ---
+    // Prints a Statement
+    std::string print(const Stmt& stmt) {
+        currentStmtString = ""; // Reset for the new statement
+        stmt.accept(*this);
+        return currentStmtString;
+    }
+
+    // --- EXPR VISITOR OVERRIDES (Returning std::any) ---
 
     std::any visitBinaryExpr(const Binary& expr) override {
         return parenthesize(expr.op.lexeme, *expr.left, *expr.right);
@@ -24,18 +34,13 @@ public:
     std::any visitLiteralExpr(const Literal& expr) override {
         if (!expr.value.has_value()) return std::string("nil");
         
-        // We must check what type is actually inside the std::any
         if (expr.value.type() == typeid(std::string)) {
             return std::any_cast<std::string>(expr.value);
-        } 
-        else if (expr.value.type() == typeid(double)) {
-            // std::to_string converts numbers to strings
+        } else if (expr.value.type() == typeid(double)) {
             return std::to_string(std::any_cast<double>(expr.value));
-        } 
-        else if (expr.value.type() == typeid(bool)) {
+        } else if (expr.value.type() == typeid(bool)) {
             return std::any_cast<bool>(expr.value) ? std::string("true") : std::string("false");
         }
-        
         return std::string("unknown");
     }
 
@@ -43,10 +48,34 @@ public:
         return parenthesize(expr.op.lexeme, *expr.right);
     }
 
+    std::any visitVariableExpr(const Variable& expr) override {
+        return expr.name.lexeme;
+    }
+
+    std::any visitAssignExpr(const Assign& expr) override {
+        return parenthesize("= " + expr.name.lexeme, *expr.value);
+    }
+
+    // --- STMT VISITOR OVERRIDES (Returning void) ---
+
+    void visitExpressionStmt(const ExpressionStmt& stmt) override {
+        currentStmtString = parenthesize("expr-stmt", *stmt.expression);
+    }
+
+    void visitPrintStmt(const PrintStmt& stmt) override {
+        currentStmtString = parenthesize("print", *stmt.expression);
+    }
+
+    void visitVarStmt(const VarStmt& stmt) override {
+        if (stmt.initializer) {
+            currentStmtString = "(let " + stmt.name.lexeme + " = " + print(*stmt.initializer) + ")";
+        } else {
+            currentStmtString = "(let " + stmt.name.lexeme + ")";
+        }
+    }
+
 private:
     // --- HELPER METHODS ---
-    // These format the nodes into Lisp-like strings: (+ 1 2)
-
     std::string parenthesize(const std::string& name, const Expr& expr) {
         return "(" + name + " " + std::any_cast<std::string>(expr.accept(*this)) + ")";
     }
