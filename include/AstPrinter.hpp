@@ -74,6 +74,15 @@ public:
         }
     }
 
+    void visitBlockStmt(const BlockStmt& stmt) override {
+        std::string result = "(block";
+        for (const auto& statement : stmt.statements) {
+            if (statement) result += " " + print(*statement);
+        }
+        result += ")";
+        currentStmtString = result;
+    }
+
 private:
     // --- HELPER METHODS ---
     std::string parenthesize(const std::string& name, const Expr& expr) {
