@@ -26,7 +26,7 @@ inline bool DEBUG_MODE = true;
 // 2. Forward Declarations
 void runFile(const std::string& path);
 void runPrompt();
-void run(const std::string& source);
+void run(const std::string& source, VM& vm);
 void report(int line, const std::string& where, const std::string& message);
 void error(int line, const std::string& message);
 
@@ -52,7 +52,8 @@ void runFile(const std::string& path) {
     }
     std::stringstream buffer;
     buffer << file.rdbuf();
-    run(buffer.str());
+    VM vm;
+    run(buffer.str(), vm);
     
     // Stop the executable if there was a syntax error in the file
     if (hadError) std::exit(65);
@@ -60,6 +61,7 @@ void runFile(const std::string& path) {
 
 void runPrompt() {
     std::string line;
+    VM vm;
     std::cout << "CVM++ Interactive REPL\nType 'exit' to quit.\n";
     for (;;) {
         std::cout << "> ";
@@ -67,13 +69,13 @@ void runPrompt() {
             std::cout << "\n";
             break;
         }
-        run(line);
+        run(line, vm);
         hadError = false; // Reset error flag so the REPL doesn't permanently lock up
     }
 }
 
 // --- THE CORE PIPELINE ---
-void run(const std::string& source) {
+void run(const std::string& source, VM& vm) {
     // 1. Lexical Analysis (Scanner)
     Scanner scanner(source);
     std::vector<Token> tokens = scanner.scanTokens();
@@ -106,7 +108,6 @@ void run(const std::string& source) {
     }
 
     // 4. Virtual Machine Execution (VM)
-    VM vm;
     vm.interpret(&chunk);
 }
 
