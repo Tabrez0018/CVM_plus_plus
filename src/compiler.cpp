@@ -123,6 +123,8 @@ void Compiler::visitBlockStmt(const BlockStmt& stmt) {
     }
 }
 
+<<<<<<< HEAD
+=======
 void Compiler::visitIfStmt(const IfStmt& stmt) {
     stmt.condition->accept(*this);
 
@@ -156,6 +158,7 @@ void Compiler::visitWhileStmt(const WhileStmt& stmt) {
     emitByte(OpCode::OP_POP);
 }
 
+>>>>>>> 61fe17690b2fca7879a1539e9ec2ee142216e3c1
 void Compiler::disassembleChunk(const std::string& name) {
     std::cout << "== " << name << " ==\n";
     for (size_t offset = 0; offset < currentChunk.code.size();) {

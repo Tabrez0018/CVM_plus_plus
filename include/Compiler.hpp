@@ -36,8 +36,11 @@ public:
     void visitPrintStmt(const PrintStmt& stmt) override;
     void visitVarStmt(const VarStmt& stmt) override;
     void visitBlockStmt(const BlockStmt& stmt) override;
+<<<<<<< HEAD
+=======
     void visitIfStmt(const IfStmt& stmt) override;
     void visitWhileStmt(const WhileStmt& stmt) override;
+>>>>>>> 61fe17690b2fca7879a1539e9ec2ee142216e3c1
 
     void disassembleChunk(const std::string& name);
 };

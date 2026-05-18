@@ -41,8 +41,11 @@ std::unique_ptr<Stmt> Parser::varDeclaration() {
 
 std::unique_ptr<Stmt> Parser::statement() {
     if (match({TokenType::PRINT})) return printStatement();
+<<<<<<< HEAD
+=======
     if (match({TokenType::IF})) return ifStatement();
     if (match({TokenType::WHILE})) return whileStatement();
+>>>>>>> 61fe17690b2fca7879a1539e9ec2ee142216e3c1
     if (match({TokenType::LEFT_BRACE})) return std::make_unique<BlockStmt>(block());
     return expressionStatement();
 }
