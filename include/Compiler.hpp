@@ -14,6 +14,9 @@ private:
     void emitByte(uint8_t byte);
     void emitByte(OpCode code);
     void emitBytes(OpCode byte1, OpCode byte2);
+    int emitJump(OpCode instruction);
+    void emitLoop(int loopStart);
+    void patchJump(int offset);
 
 public:
     // CHANGED: Now takes a vector of statements instead of one expression
@@ -26,12 +29,18 @@ public:
     std::any visitUnaryExpr(const Unary& expr) override;
     std::any visitVariableExpr(const Variable& expr) override; // NEW
     std::any visitAssignExpr(const Assign& expr) override;     // NEW
+    std::any visitInputExpr(const Input& expr) override;
 
     // --- STMT VISITOR OVERRIDES ---
     void visitExpressionStmt(const ExpressionStmt& stmt) override;
     void visitPrintStmt(const PrintStmt& stmt) override;
     void visitVarStmt(const VarStmt& stmt) override;
     void visitBlockStmt(const BlockStmt& stmt) override;
+<<<<<<< HEAD
+=======
+    void visitIfStmt(const IfStmt& stmt) override;
+    void visitWhileStmt(const WhileStmt& stmt) override;
+>>>>>>> 61fe17690b2fca7879a1539e9ec2ee142216e3c1
 
     void disassembleChunk(const std::string& name);
 };

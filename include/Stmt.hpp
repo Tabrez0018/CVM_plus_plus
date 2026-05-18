@@ -7,6 +7,11 @@ struct ExpressionStmt;
 struct PrintStmt;
 struct VarStmt;
 struct BlockStmt;
+<<<<<<< HEAD
+=======
+struct IfStmt;
+struct WhileStmt;
+>>>>>>> 61fe17690b2fca7879a1539e9ec2ee142216e3c1
 
 // The Visitor for Statements
 struct StmtVisitor {
@@ -15,6 +20,11 @@ struct StmtVisitor {
     virtual void visitPrintStmt(const PrintStmt& stmt) = 0;
     virtual void visitVarStmt(const VarStmt& stmt) = 0;
     virtual void visitBlockStmt(const BlockStmt& stmt) = 0;
+<<<<<<< HEAD
+=======
+    virtual void visitIfStmt(const IfStmt& stmt) = 0;
+    virtual void visitWhileStmt(const WhileStmt& stmt) = 0;
+>>>>>>> 61fe17690b2fca7879a1539e9ec2ee142216e3c1
 };
 
 // Base Statement Class
@@ -50,4 +60,29 @@ struct BlockStmt : public Stmt {
     std::vector<std::unique_ptr<Stmt>> statements;
     BlockStmt(std::vector<std::unique_ptr<Stmt>> statements) : statements(std::move(statements)) {}
     void accept(StmtVisitor& visitor) const override { visitor.visitBlockStmt(*this); }
+<<<<<<< HEAD
 };
+=======
+};
+
+struct IfStmt : public Stmt {
+    std::unique_ptr<Expr> condition;
+    std::unique_ptr<Stmt> thenBranch;
+    std::unique_ptr<Stmt> elseBranch;
+
+    IfStmt(std::unique_ptr<Expr> condition, std::unique_ptr<Stmt> thenBranch, std::unique_ptr<Stmt> elseBranch)
+        : condition(std::move(condition)), thenBranch(std::move(thenBranch)), elseBranch(std::move(elseBranch)) {}
+
+    void accept(StmtVisitor& visitor) const override { visitor.visitIfStmt(*this); }
+};
+
+struct WhileStmt : public Stmt {
+    std::unique_ptr<Expr> condition;
+    std::unique_ptr<Stmt> body;
+
+    WhileStmt(std::unique_ptr<Expr> condition, std::unique_ptr<Stmt> body)
+        : condition(std::move(condition)), body(std::move(body)) {}
+
+    void accept(StmtVisitor& visitor) const override { visitor.visitWhileStmt(*this); }
+};
+>>>>>>> 61fe17690b2fca7879a1539e9ec2ee142216e3c1

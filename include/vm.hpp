@@ -22,6 +22,8 @@ private:
     void push(std::any value);
     std::any pop();
     std::any peek(int distance) const; // NEW: Look at the stack without popping
+    bool isFalsey(const std::any& value) const;
+    void printValue(const std::any& value) const;
 
     InterpretResult run();
 

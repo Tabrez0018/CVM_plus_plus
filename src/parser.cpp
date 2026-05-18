@@ -41,6 +41,11 @@ std::unique_ptr<Stmt> Parser::varDeclaration() {
 
 std::unique_ptr<Stmt> Parser::statement() {
     if (match({TokenType::PRINT})) return printStatement();
+<<<<<<< HEAD
+=======
+    if (match({TokenType::IF})) return ifStatement();
+    if (match({TokenType::WHILE})) return whileStatement();
+>>>>>>> 61fe17690b2fca7879a1539e9ec2ee142216e3c1
     if (match({TokenType::LEFT_BRACE})) return std::make_unique<BlockStmt>(block());
     return expressionStatement();
 }
@@ -49,6 +54,29 @@ std::unique_ptr<Stmt> Parser::printStatement() {
     std::unique_ptr<Expr> value = expression();
     consume(TokenType::SEMICOLON, "Expect ';' after value.");
     return std::make_unique<PrintStmt>(std::move(value));
+}
+
+std::unique_ptr<Stmt> Parser::ifStatement() {
+    consume(TokenType::LEFT_PAREN, "Expect '(' after 'if'.");
+    std::unique_ptr<Expr> condition = expression();
+    consume(TokenType::RIGHT_PAREN, "Expect ')' after if condition.");
+
+    std::unique_ptr<Stmt> thenBranch = statement();
+    std::unique_ptr<Stmt> elseBranch = nullptr;
+    if (match({TokenType::ELSE})) {
+        elseBranch = statement();
+    }
+
+    return std::make_unique<IfStmt>(std::move(condition), std::move(thenBranch), std::move(elseBranch));
+}
+
+std::unique_ptr<Stmt> Parser::whileStatement() {
+    consume(TokenType::LEFT_PAREN, "Expect '(' after 'while'.");
+    std::unique_ptr<Expr> condition = expression();
+    consume(TokenType::RIGHT_PAREN, "Expect ')' after while condition.");
+
+    std::unique_ptr<Stmt> body = statement();
+    return std::make_unique<WhileStmt>(std::move(condition), std::move(body));
 }
 
 std::unique_ptr<Stmt> Parser::expressionStatement() {
@@ -187,6 +215,10 @@ std::unique_ptr<Expr> Parser::primary() {
 
     if (match({TokenType::STRING})) {
         return std::make_unique<Literal>(previous().lexeme);
+    }
+
+    if (match({TokenType::INPUT})) {
+        return std::make_unique<Input>();
     }
 
     // NEW: Variable lookup ("x")
