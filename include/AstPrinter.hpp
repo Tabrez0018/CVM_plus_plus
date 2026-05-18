@@ -56,6 +56,10 @@ public:
         return parenthesize("= " + expr.name.lexeme, *expr.value);
     }
 
+    std::any visitInputExpr(const Input& expr) override {
+        return std::string("input");
+    }
+
     // --- STMT VISITOR OVERRIDES (Returning void) ---
 
     void visitExpressionStmt(const ExpressionStmt& stmt) override {
@@ -72,6 +76,34 @@ public:
         } else {
             currentStmtString = "(let " + stmt.name.lexeme + ")";
         }
+    }
+
+    void visitBlockStmt(const BlockStmt& stmt) override {
+        std::string result = "(block";
+        for (const auto& statement : stmt.statements) {
+            if (statement) result += " " + print(*statement);
+        }
+        result += ")";
+        currentStmtString = result;
+    }
+
+    void visitIfStmt(const IfStmt& stmt) override {
+        std::string result = "(if " + print(*stmt.condition) + " ";
+        stmt.thenBranch->accept(*this);
+        result += currentStmtString;
+        if (stmt.elseBranch) {
+            stmt.elseBranch->accept(*this);
+            result += " else " + currentStmtString;
+        }
+        result += ")";
+        currentStmtString = result;
+    }
+
+    void visitWhileStmt(const WhileStmt& stmt) override {
+        std::string result = "(while " + print(*stmt.condition) + " ";
+        stmt.body->accept(*this);
+        result += currentStmtString + ")";
+        currentStmtString = result;
     }
 
 private:

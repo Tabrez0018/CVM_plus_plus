@@ -25,6 +25,10 @@ enum class OpCode : uint8_t {
     // Statements
     OP_PRINT,
     OP_POP,
+    OP_JUMP,
+    OP_JUMP_IF_FALSE,
+    OP_LOOP,
+    OP_INPUT,
 
     OP_RETURN
 };

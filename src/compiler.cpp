@@ -7,6 +7,27 @@ void Compiler::emitBytes(OpCode byte1, OpCode byte2) {
     emitByte(byte2);
 }
 
+int Compiler::emitJump(OpCode instruction) {
+    emitByte(instruction);
+    emitByte(0xff);
+    emitByte(0xff);
+    return static_cast<int>(currentChunk.code.size()) - 2;
+}
+
+void Compiler::emitLoop(int loopStart) {
+    emitByte(OpCode::OP_LOOP);
+
+    int offset = static_cast<int>(currentChunk.code.size()) - loopStart + 2;
+    emitByte(static_cast<uint8_t>((offset >> 8) & 0xff));
+    emitByte(static_cast<uint8_t>(offset & 0xff));
+}
+
+void Compiler::patchJump(int offset) {
+    int jump = static_cast<int>(currentChunk.code.size()) - offset - 2;
+    currentChunk.code[offset] = static_cast<uint8_t>((jump >> 8) & 0xff);
+    currentChunk.code[offset + 1] = static_cast<uint8_t>(jump & 0xff);
+}
+
 Chunk Compiler::compile(const std::vector<std::unique_ptr<Stmt>>& statements) {
     for (const auto& statement : statements) {
         if (statement) statement->accept(*this);
@@ -71,6 +92,11 @@ std::any Compiler::visitAssignExpr(const Assign& expr) {
     return {};
 }
 
+std::any Compiler::visitInputExpr(const Input& expr) {
+    emitByte(OpCode::OP_INPUT);
+    return {};
+}
+
 void Compiler::visitExpressionStmt(const ExpressionStmt& stmt) {
     stmt.expression->accept(*this);
     emitByte(OpCode::OP_POP); 
@@ -89,6 +115,45 @@ void Compiler::visitVarStmt(const VarStmt& stmt) {
     }
     int index = currentChunk.addConstant(stmt.name.lexeme);
     emitBytes(OpCode::OP_DEFINE_GLOBAL, static_cast<OpCode>(index));
+}
+
+void Compiler::visitBlockStmt(const BlockStmt& stmt) {
+    for (const auto& statement : stmt.statements) {
+        if (statement) statement->accept(*this);
+    }
+}
+
+void Compiler::visitIfStmt(const IfStmt& stmt) {
+    stmt.condition->accept(*this);
+
+    int thenJump = emitJump(OpCode::OP_JUMP_IF_FALSE);
+    emitByte(OpCode::OP_POP);
+    stmt.thenBranch->accept(*this);
+
+    int elseJump = emitJump(OpCode::OP_JUMP);
+
+    patchJump(thenJump);
+    emitByte(OpCode::OP_POP);
+
+    if (stmt.elseBranch) {
+        stmt.elseBranch->accept(*this);
+    }
+
+    patchJump(elseJump);
+}
+
+void Compiler::visitWhileStmt(const WhileStmt& stmt) {
+    int loopStart = static_cast<int>(currentChunk.code.size());
+
+    stmt.condition->accept(*this);
+    int exitJump = emitJump(OpCode::OP_JUMP_IF_FALSE);
+    emitByte(OpCode::OP_POP);
+
+    stmt.body->accept(*this);
+    emitLoop(loopStart);
+
+    patchJump(exitJump);
+    emitByte(OpCode::OP_POP);
 }
 
 void Compiler::disassembleChunk(const std::string& name) {
@@ -125,6 +190,7 @@ void Compiler::disassembleChunk(const std::string& name) {
             }
             case OpCode::OP_PRINT:     std::cout << "OP_PRINT\n"; offset++; break;
             case OpCode::OP_POP:       std::cout << "OP_POP\n"; offset++; break;
+            case OpCode::OP_INPUT:     std::cout << "OP_INPUT\n"; offset++; break;
             case OpCode::OP_ADD:       std::cout << "OP_ADD\n"; offset++; break;
             case OpCode::OP_SUBTRACT:  std::cout << "OP_SUBTRACT\n"; offset++; break;
             case OpCode::OP_MULTIPLY:  std::cout << "OP_MULTIPLY\n"; offset++; break;
@@ -136,6 +202,18 @@ void Compiler::disassembleChunk(const std::string& name) {
             case OpCode::OP_LESS:      std::cout << "OP_LESS\n"; offset++; break;
             case OpCode::OP_TRUE:      std::cout << "OP_TRUE\n"; offset++; break;
             case OpCode::OP_FALSE:     std::cout << "OP_FALSE\n"; offset++; break;
+            case OpCode::OP_JUMP:
+            case OpCode::OP_JUMP_IF_FALSE:
+            case OpCode::OP_LOOP: {
+                uint16_t jump = static_cast<uint16_t>((currentChunk.code[offset + 1] << 8) | currentChunk.code[offset + 2]);
+                const char* name =
+                    static_cast<OpCode>(instruction) == OpCode::OP_JUMP ? "OP_JUMP" :
+                    static_cast<OpCode>(instruction) == OpCode::OP_JUMP_IF_FALSE ? "OP_JUMP_IF_FALSE" :
+                    "OP_LOOP";
+                std::cout << name << " " << jump << "\n";
+                offset += 3;
+                break;
+            }
             case OpCode::OP_RETURN:    std::cout << "OP_RETURN\n"; offset++; break;
             default:                   std::cout << "Unknown opcode " << (int)instruction << "\n"; offset++; break;
         }

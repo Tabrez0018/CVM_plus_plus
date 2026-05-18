@@ -10,6 +10,7 @@ struct Literal;
 struct Unary;
 struct Variable; // NEW
 struct Assign;   // NEW
+struct Input;
 
 struct ExprVisitor {
     virtual ~ExprVisitor() = default;
@@ -19,6 +20,7 @@ struct ExprVisitor {
     virtual std::any visitUnaryExpr(const Unary& expr) = 0;
     virtual std::any visitVariableExpr(const Variable& expr) = 0; // NEW
     virtual std::any visitAssignExpr(const Assign& expr) = 0;     // NEW
+    virtual std::any visitInputExpr(const Input& expr) = 0;
 };
 
 struct Expr {
@@ -70,5 +72,11 @@ struct Assign : public Expr {
         : name(std::move(name)), value(std::move(value)) {}
     std::any accept(ExprVisitor& visitor) const override {
         return visitor.visitAssignExpr(*this);
+    }
+};
+
+struct Input : public Expr {
+    std::any accept(ExprVisitor& visitor) const override {
+        return visitor.visitInputExpr(*this);
     }
 };

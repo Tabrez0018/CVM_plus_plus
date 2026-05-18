@@ -17,13 +17,17 @@ private:
     std::unique_ptr<Stmt> varDeclaration();
     std::unique_ptr<Stmt> statement();
     std::unique_ptr<Stmt> printStatement();
+    std::unique_ptr<Stmt> ifStatement();
+    std::unique_ptr<Stmt> whileStatement();
     std::unique_ptr<Stmt> expressionStatement();
+    std::vector<std::unique_ptr<Stmt>> block();
     
     // --- ERROR RECOVERY ---
     void synchronize(); // Helps the parser recover if it hits a bad line
 
     // --- EXISTING EXPRESSION RULES ---
     std::unique_ptr<Expr> expression();
+    std::unique_ptr<Expr> assignment();
     // ... (Keep equality, comparison, term, factor, unary, primary exactly the same)
     std::unique_ptr<Expr> equality();
     std::unique_ptr<Expr> comparison();

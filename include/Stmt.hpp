@@ -1,10 +1,14 @@
 #pragma once
 #include "Expr.hpp"
 #include <memory>
+#include <vector>
 
 struct ExpressionStmt;
 struct PrintStmt;
 struct VarStmt;
+struct BlockStmt;
+struct IfStmt;
+struct WhileStmt;
 
 // The Visitor for Statements
 struct StmtVisitor {
@@ -12,6 +16,9 @@ struct StmtVisitor {
     virtual void visitExpressionStmt(const ExpressionStmt& stmt) = 0;
     virtual void visitPrintStmt(const PrintStmt& stmt) = 0;
     virtual void visitVarStmt(const VarStmt& stmt) = 0;
+    virtual void visitBlockStmt(const BlockStmt& stmt) = 0;
+    virtual void visitIfStmt(const IfStmt& stmt) = 0;
+    virtual void visitWhileStmt(const WhileStmt& stmt) = 0;
 };
 
 // Base Statement Class
@@ -41,4 +48,31 @@ struct VarStmt : public Stmt {
     VarStmt(Token name, std::unique_ptr<Expr> initializer) 
         : name(std::move(name)), initializer(std::move(initializer)) {}
     void accept(StmtVisitor& visitor) const override { visitor.visitVarStmt(*this); }
+};
+
+struct BlockStmt : public Stmt {
+    std::vector<std::unique_ptr<Stmt>> statements;
+    BlockStmt(std::vector<std::unique_ptr<Stmt>> statements) : statements(std::move(statements)) {}
+    void accept(StmtVisitor& visitor) const override { visitor.visitBlockStmt(*this); }
+};
+
+struct IfStmt : public Stmt {
+    std::unique_ptr<Expr> condition;
+    std::unique_ptr<Stmt> thenBranch;
+    std::unique_ptr<Stmt> elseBranch;
+
+    IfStmt(std::unique_ptr<Expr> condition, std::unique_ptr<Stmt> thenBranch, std::unique_ptr<Stmt> elseBranch)
+        : condition(std::move(condition)), thenBranch(std::move(thenBranch)), elseBranch(std::move(elseBranch)) {}
+
+    void accept(StmtVisitor& visitor) const override { visitor.visitIfStmt(*this); }
+};
+
+struct WhileStmt : public Stmt {
+    std::unique_ptr<Expr> condition;
+    std::unique_ptr<Stmt> body;
+
+    WhileStmt(std::unique_ptr<Expr> condition, std::unique_ptr<Stmt> body)
+        : condition(std::move(condition)), body(std::move(body)) {}
+
+    void accept(StmtVisitor& visitor) const override { visitor.visitWhileStmt(*this); }
 };

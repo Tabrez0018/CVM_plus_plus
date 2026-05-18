@@ -41,6 +41,9 @@ std::unique_ptr<Stmt> Parser::varDeclaration() {
 
 std::unique_ptr<Stmt> Parser::statement() {
     if (match({TokenType::PRINT})) return printStatement();
+    if (match({TokenType::IF})) return ifStatement();
+    if (match({TokenType::WHILE})) return whileStatement();
+    if (match({TokenType::LEFT_BRACE})) return std::make_unique<BlockStmt>(block());
     return expressionStatement();
 }
 
@@ -50,10 +53,44 @@ std::unique_ptr<Stmt> Parser::printStatement() {
     return std::make_unique<PrintStmt>(std::move(value));
 }
 
+std::unique_ptr<Stmt> Parser::ifStatement() {
+    consume(TokenType::LEFT_PAREN, "Expect '(' after 'if'.");
+    std::unique_ptr<Expr> condition = expression();
+    consume(TokenType::RIGHT_PAREN, "Expect ')' after if condition.");
+
+    std::unique_ptr<Stmt> thenBranch = statement();
+    std::unique_ptr<Stmt> elseBranch = nullptr;
+    if (match({TokenType::ELSE})) {
+        elseBranch = statement();
+    }
+
+    return std::make_unique<IfStmt>(std::move(condition), std::move(thenBranch), std::move(elseBranch));
+}
+
+std::unique_ptr<Stmt> Parser::whileStatement() {
+    consume(TokenType::LEFT_PAREN, "Expect '(' after 'while'.");
+    std::unique_ptr<Expr> condition = expression();
+    consume(TokenType::RIGHT_PAREN, "Expect ')' after while condition.");
+
+    std::unique_ptr<Stmt> body = statement();
+    return std::make_unique<WhileStmt>(std::move(condition), std::move(body));
+}
+
 std::unique_ptr<Stmt> Parser::expressionStatement() {
     std::unique_ptr<Expr> expr = expression();
     consume(TokenType::SEMICOLON, "Expect ';' after expression.");
     return std::make_unique<ExpressionStmt>(std::move(expr));
+}
+
+std::vector<std::unique_ptr<Stmt>> Parser::block() {
+    std::vector<std::unique_ptr<Stmt>> statements;
+
+    while (!check(TokenType::RIGHT_BRACE) && !isAtEnd()) {
+        statements.push_back(declaration());
+    }
+
+    consume(TokenType::RIGHT_BRACE, "Expect '}' after block.");
+    return statements;
 }
 
 // --- ERROR RECOVERY ---
@@ -77,9 +114,28 @@ void Parser::synchronize() {
 
 // --- EXPRESSION RULES ---
 
-// expression -> equality
+// expression -> assignment
 std::unique_ptr<Expr> Parser::expression() {
-    return equality();
+    return assignment();
+}
+
+// assignment -> IDENTIFIER "=" assignment | equality
+std::unique_ptr<Expr> Parser::assignment() {
+    std::unique_ptr<Expr> expr = equality();
+
+    if (match({TokenType::EQUAL})) {
+        Token equals = previous();
+        std::unique_ptr<Expr> value = assignment();
+
+        if (auto* variable = dynamic_cast<Variable*>(expr.get())) {
+            Token name = variable->name;
+            return std::make_unique<Assign>(name, std::move(value));
+        }
+
+        error(equals, "Invalid assignment target.");
+    }
+
+    return expr;
 }
 
 // equality -> comparison ( ( "!=" | "==" ) comparison )*
@@ -156,6 +212,10 @@ std::unique_ptr<Expr> Parser::primary() {
 
     if (match({TokenType::STRING})) {
         return std::make_unique<Literal>(previous().lexeme);
+    }
+
+    if (match({TokenType::INPUT})) {
+        return std::make_unique<Input>();
     }
 
     // NEW: Variable lookup ("x")
