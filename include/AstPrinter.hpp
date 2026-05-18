@@ -1,27 +1,24 @@
 #pragma once
 #include "Expr.hpp"
 #include "Stmt.hpp"
-#include <string>
+#include <any>
 #include <sstream>
+#include <string>
 
 class AstPrinter : public ExprVisitor, public StmtVisitor {
 private:
     std::string currentStmtString;
 
 public:
-    // Prints an Expression
     std::string print(const Expr& expr) {
         return std::any_cast<std::string>(expr.accept(*this));
     }
 
-    // Prints a Statement
     std::string print(const Stmt& stmt) {
-        currentStmtString = ""; // Reset for the new statement
+        currentStmtString = "";
         stmt.accept(*this);
         return currentStmtString;
     }
-
-    // --- EXPR VISITOR OVERRIDES (Returning std::any) ---
 
     std::any visitBinaryExpr(const Binary& expr) override {
         return parenthesize(expr.op.lexeme, *expr.left, *expr.right);
@@ -33,12 +30,14 @@ public:
 
     std::any visitLiteralExpr(const Literal& expr) override {
         if (!expr.value.has_value()) return std::string("nil");
-        
+
         if (expr.value.type() == typeid(std::string)) {
             return std::any_cast<std::string>(expr.value);
-        } else if (expr.value.type() == typeid(double)) {
+        }
+        if (expr.value.type() == typeid(double)) {
             return std::to_string(std::any_cast<double>(expr.value));
-        } else if (expr.value.type() == typeid(bool)) {
+        }
+        if (expr.value.type() == typeid(bool)) {
             return std::any_cast<bool>(expr.value) ? std::string("true") : std::string("false");
         }
         return std::string("unknown");
@@ -59,8 +58,6 @@ public:
     std::any visitInputExpr(const Input& expr) override {
         return std::string("input");
     }
-
-    // --- STMT VISITOR OVERRIDES (Returning void) ---
 
     void visitExpressionStmt(const ExpressionStmt& stmt) override {
         currentStmtString = parenthesize("expr-stmt", *stmt.expression);
@@ -87,8 +84,6 @@ public:
         currentStmtString = result;
     }
 
-<<<<<<< HEAD
-=======
     void visitIfStmt(const IfStmt& stmt) override {
         std::string result = "(if " + print(*stmt.condition) + " ";
         stmt.thenBranch->accept(*this);
@@ -108,16 +103,14 @@ public:
         currentStmtString = result;
     }
 
->>>>>>> 61fe17690b2fca7879a1539e9ec2ee142216e3c1
 private:
-    // --- HELPER METHODS ---
     std::string parenthesize(const std::string& name, const Expr& expr) {
         return "(" + name + " " + std::any_cast<std::string>(expr.accept(*this)) + ")";
     }
 
     std::string parenthesize(const std::string& name, const Expr& expr1, const Expr& expr2) {
-        return "(" + name + " " + 
-               std::any_cast<std::string>(expr1.accept(*this)) + " " + 
+        return "(" + name + " " +
+               std::any_cast<std::string>(expr1.accept(*this)) + " " +
                std::any_cast<std::string>(expr2.accept(*this)) + ")";
     }
 };

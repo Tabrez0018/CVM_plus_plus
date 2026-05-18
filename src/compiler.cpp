@@ -32,7 +32,7 @@ Chunk Compiler::compile(const std::vector<std::unique_ptr<Stmt>>& statements) {
     for (const auto& statement : statements) {
         if (statement) statement->accept(*this);
     }
-    emitByte(OpCode::OP_RETURN); 
+    emitByte(OpCode::OP_RETURN);
     return currentChunk;
 }
 
@@ -45,7 +45,7 @@ std::any Compiler::visitLiteralExpr(const Literal& expr) {
         emitByte(OpCode::OP_CONSTANT);
         emitByte(static_cast<uint8_t>(index));
     }
-    return {}; 
+    return {};
 }
 
 std::any Compiler::visitGroupingExpr(const Grouping& expr) {
@@ -86,7 +86,7 @@ std::any Compiler::visitVariableExpr(const Variable& expr) {
 }
 
 std::any Compiler::visitAssignExpr(const Assign& expr) {
-    expr.value->accept(*this); 
+    expr.value->accept(*this);
     int index = currentChunk.addConstant(expr.name.lexeme);
     emitBytes(OpCode::OP_SET_GLOBAL, static_cast<OpCode>(index));
     return {};
@@ -99,7 +99,7 @@ std::any Compiler::visitInputExpr(const Input& expr) {
 
 void Compiler::visitExpressionStmt(const ExpressionStmt& stmt) {
     stmt.expression->accept(*this);
-    emitByte(OpCode::OP_POP); 
+    emitByte(OpCode::OP_POP);
 }
 
 void Compiler::visitPrintStmt(const PrintStmt& stmt) {
@@ -109,9 +109,9 @@ void Compiler::visitPrintStmt(const PrintStmt& stmt) {
 
 void Compiler::visitVarStmt(const VarStmt& stmt) {
     if (stmt.initializer) {
-        stmt.initializer->accept(*this); 
+        stmt.initializer->accept(*this);
     } else {
-        emitByte(OpCode::OP_FALSE); 
+        emitByte(OpCode::OP_FALSE);
     }
     int index = currentChunk.addConstant(stmt.name.lexeme);
     emitBytes(OpCode::OP_DEFINE_GLOBAL, static_cast<OpCode>(index));
@@ -123,8 +123,6 @@ void Compiler::visitBlockStmt(const BlockStmt& stmt) {
     }
 }
 
-<<<<<<< HEAD
-=======
 void Compiler::visitIfStmt(const IfStmt& stmt) {
     stmt.condition->accept(*this);
 
@@ -158,7 +156,6 @@ void Compiler::visitWhileStmt(const WhileStmt& stmt) {
     emitByte(OpCode::OP_POP);
 }
 
->>>>>>> 61fe17690b2fca7879a1539e9ec2ee142216e3c1
 void Compiler::disassembleChunk(const std::string& name) {
     std::cout << "== " << name << " ==\n";
     for (size_t offset = 0; offset < currentChunk.code.size();) {
@@ -168,28 +165,31 @@ void Compiler::disassembleChunk(const std::string& name) {
         switch (static_cast<OpCode>(instruction)) {
             case OpCode::OP_CONSTANT: {
                 uint8_t constantIndex = currentChunk.code[offset + 1];
-                std::cout << "OP_CONSTANT " << (int)constantIndex << " '";
+                std::cout << "OP_CONSTANT " << static_cast<int>(constantIndex) << " '";
                 auto& val = currentChunk.constants[constantIndex];
                 if (val.type() == typeid(double)) std::cout << std::any_cast<double>(val);
                 else if (val.type() == typeid(std::string)) std::cout << std::any_cast<std::string>(val);
                 std::cout << "'\n";
-                offset += 2; 
+                offset += 2;
                 break;
             }
             case OpCode::OP_DEFINE_GLOBAL: {
                 uint8_t index = currentChunk.code[offset + 1];
-                std::cout << "OP_DEFINE_GLOBAL " << (int)index << " '" << std::any_cast<std::string>(currentChunk.constants[index]) << "'\n";
-                offset += 2; break;
+                std::cout << "OP_DEFINE_GLOBAL " << static_cast<int>(index) << " '" << std::any_cast<std::string>(currentChunk.constants[index]) << "'\n";
+                offset += 2;
+                break;
             }
             case OpCode::OP_GET_GLOBAL: {
                 uint8_t index = currentChunk.code[offset + 1];
-                std::cout << "OP_GET_GLOBAL " << (int)index << " '" << std::any_cast<std::string>(currentChunk.constants[index]) << "'\n";
-                offset += 2; break;
+                std::cout << "OP_GET_GLOBAL " << static_cast<int>(index) << " '" << std::any_cast<std::string>(currentChunk.constants[index]) << "'\n";
+                offset += 2;
+                break;
             }
             case OpCode::OP_SET_GLOBAL: {
                 uint8_t index = currentChunk.code[offset + 1];
-                std::cout << "OP_SET_GLOBAL " << (int)index << " '" << std::any_cast<std::string>(currentChunk.constants[index]) << "'\n";
-                offset += 2; break;
+                std::cout << "OP_SET_GLOBAL " << static_cast<int>(index) << " '" << std::any_cast<std::string>(currentChunk.constants[index]) << "'\n";
+                offset += 2;
+                break;
             }
             case OpCode::OP_PRINT:     std::cout << "OP_PRINT\n"; offset++; break;
             case OpCode::OP_POP:       std::cout << "OP_POP\n"; offset++; break;
@@ -218,7 +218,7 @@ void Compiler::disassembleChunk(const std::string& name) {
                 break;
             }
             case OpCode::OP_RETURN:    std::cout << "OP_RETURN\n"; offset++; break;
-            default:                   std::cout << "Unknown opcode " << (int)instruction << "\n"; offset++; break;
+            default:                   std::cout << "Unknown opcode " << static_cast<int>(instruction) << "\n"; offset++; break;
         }
     }
 }

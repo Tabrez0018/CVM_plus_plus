@@ -1,12 +1,11 @@
 #pragma once
 #include "Expr.hpp"
-#include "Stmt.hpp" // NEW
+#include "Stmt.hpp"
 #include "chunk.hpp"
-#include <vector>   // NEW
-#include <iostream>
 #include <iomanip>
+#include <iostream>
+#include <vector>
 
-// Notice multiple inheritance here:
 class Compiler : public ExprVisitor, public StmtVisitor {
 private:
     Chunk currentChunk;
@@ -19,28 +18,22 @@ private:
     void patchJump(int offset);
 
 public:
-    // CHANGED: Now takes a vector of statements instead of one expression
     Chunk compile(const std::vector<std::unique_ptr<Stmt>>& statements);
 
-    // --- EXPR VISITOR OVERRIDES ---
     std::any visitBinaryExpr(const Binary& expr) override;
     std::any visitGroupingExpr(const Grouping& expr) override;
     std::any visitLiteralExpr(const Literal& expr) override;
     std::any visitUnaryExpr(const Unary& expr) override;
-    std::any visitVariableExpr(const Variable& expr) override; // NEW
-    std::any visitAssignExpr(const Assign& expr) override;     // NEW
+    std::any visitVariableExpr(const Variable& expr) override;
+    std::any visitAssignExpr(const Assign& expr) override;
     std::any visitInputExpr(const Input& expr) override;
 
-    // --- STMT VISITOR OVERRIDES ---
     void visitExpressionStmt(const ExpressionStmt& stmt) override;
     void visitPrintStmt(const PrintStmt& stmt) override;
     void visitVarStmt(const VarStmt& stmt) override;
     void visitBlockStmt(const BlockStmt& stmt) override;
-<<<<<<< HEAD
-=======
     void visitIfStmt(const IfStmt& stmt) override;
     void visitWhileStmt(const WhileStmt& stmt) override;
->>>>>>> 61fe17690b2fca7879a1539e9ec2ee142216e3c1
 
     void disassembleChunk(const std::string& name);
 };
