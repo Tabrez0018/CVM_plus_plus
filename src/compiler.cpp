@@ -91,6 +91,12 @@ void Compiler::visitVarStmt(const VarStmt& stmt) {
     emitBytes(OpCode::OP_DEFINE_GLOBAL, static_cast<OpCode>(index));
 }
 
+void Compiler::visitBlockStmt(const BlockStmt& stmt) {
+    for (const auto& statement : stmt.statements) {
+        if (statement) statement->accept(*this);
+    }
+}
+
 void Compiler::disassembleChunk(const std::string& name) {
     std::cout << "== " << name << " ==\n";
     for (size_t offset = 0; offset < currentChunk.code.size();) {
