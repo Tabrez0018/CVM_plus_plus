@@ -1,0 +1,11 @@
+let input_value = 1;
+
+if (input_value == 0) {
+    print 0;
+} else {
+    let count = 0;
+    while (count < 5) {
+        print 1;
+        count = count + 1;
+    }
+}
