@@ -18,6 +18,7 @@ private:
     std::unique_ptr<Stmt> statement();
     std::unique_ptr<Stmt> printStatement();
     std::unique_ptr<Stmt> expressionStatement();
+    std::vector<std::unique_ptr<Stmt>> block();
     
     // --- ERROR RECOVERY ---
     void synchronize(); // Helps the parser recover if it hits a bad line
