@@ -77,9 +77,28 @@ void Parser::synchronize() {
 
 // --- EXPRESSION RULES ---
 
-// expression -> equality
+// expression -> assignment
 std::unique_ptr<Expr> Parser::expression() {
-    return equality();
+    return assignment();
+}
+
+// assignment -> IDENTIFIER "=" assignment | equality
+std::unique_ptr<Expr> Parser::assignment() {
+    std::unique_ptr<Expr> expr = equality();
+
+    if (match({TokenType::EQUAL})) {
+        Token equals = previous();
+        std::unique_ptr<Expr> value = assignment();
+
+        if (auto* variable = dynamic_cast<Variable*>(expr.get())) {
+            Token name = variable->name;
+            return std::make_unique<Assign>(name, std::move(value));
+        }
+
+        error(equals, "Invalid assignment target.");
+    }
+
+    return expr;
 }
 
 // equality -> comparison ( ( "!=" | "==" ) comparison )*

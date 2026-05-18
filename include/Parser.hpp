@@ -24,6 +24,7 @@ private:
 
     // --- EXISTING EXPRESSION RULES ---
     std::unique_ptr<Expr> expression();
+    std::unique_ptr<Expr> assignment();
     // ... (Keep equality, comparison, term, factor, unary, primary exactly the same)
     std::unique_ptr<Expr> equality();
     std::unique_ptr<Expr> comparison();
