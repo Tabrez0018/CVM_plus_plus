@@ -31,6 +31,7 @@ public:
     void visitExpressionStmt(const ExpressionStmt& stmt) override;
     void visitPrintStmt(const PrintStmt& stmt) override;
     void visitVarStmt(const VarStmt& stmt) override;
+    void visitBlockStmt(const BlockStmt& stmt) override;
 
     void disassembleChunk(const std::string& name);
 };
